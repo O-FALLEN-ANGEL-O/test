@@ -46,9 +46,9 @@ Submissions go to the Vercel Function in `api/contact.js` first. It:
 3. verifies an invisible **reCAPTCHA v3** token with Google (score ≥ `RECAPTCHA_MIN_SCORE`, default 0.5, action `contact`);
 4. forwards the message to your **WhatsApp** through [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/).
 
-Only once the function accepts it does the browser send the **email** copy through [Web3Forms](https://web3forms.com). Either channel getting through counts as sent. If the function rejects it, nothing is sent and the visitor sees a spam-check message.
+Only once the function accepts it does the browser send the **email** copy through [Web3Forms](https://web3forms.com), using the access key the function returns (Web3Forms refuses server-side submissions on its free plan, so the email itself has to leave from the browser). Either channel getting through counts as sent. If the function rejects it, nothing is sent and the visitor sees a spam-check message.
 
-Setup (Vercel → Project → Settings → Environment Variables, then redeploy):
+Setup (Vercel → Project → Settings → Environment Variables, tick **Production**, then redeploy — Vercel only applies env changes to new deployments):
 
 | Variable | Where it comes from | Visibility |
 |---|---|---|
@@ -56,7 +56,7 @@ Setup (Vercel → Project → Settings → Environment Variables, then redeploy)
 | `RECAPTCHA_SECRET` | same page, secret key | server only |
 | `CALLMEBOT_PHONE` | your WhatsApp number, country code + digits, e.g. `918105561638` | server only |
 | `CALLMEBOT_APIKEY` | sent by CallMeBot after you message their number from WhatsApp | server only |
-| `VITE_WEB3FORMS_KEY` | [Web3Forms](https://web3forms.com) access key for `contact@praxel.space` | public (in the page) |
+| `WEB3FORMS_KEY` | [Web3Forms](https://web3forms.com) access key for `contact@praxel.space` (the older `VITE_WEB3FORMS_KEY` name also works) | handed to the browser after a submission is accepted |
 
 Each piece is optional: without reCAPTCHA keys the captcha step is skipped, without CallMeBot keys WhatsApp is skipped, and with nothing configured the visitor's mail app opens with the message pre-filled. `npm run dev` doesn't run the function; use `vercel dev` to try it locally.
 

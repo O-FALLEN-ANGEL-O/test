@@ -9,8 +9,14 @@
 //   RECAPTCHA_MIN_SCORE    — optional, 0..1, default 0.5 (lower = more lenient)
 //   CALLMEBOT_PHONE        — WhatsApp number with country code, digits only, e.g. 918105561638
 //   CALLMEBOT_APIKEY       — key CallMeBot sends after you register that number
+//   WEB3FORMS_KEY          — Web3Forms access key (VITE_WEB3FORMS_KEY is accepted too)
 //
-// Response: 200 { ok, whatsapp: 'sent' | 'failed' | 'off' } once the submission is accepted;
+// Web3Forms refuses server-side submissions on its free plan, so the email itself is sent
+// from the browser. This function hands the (public-by-design) access key to the browser
+// only after a submission passes the checks above — read at runtime, so it works without
+// baking the key into the build.
+//
+// Response: 200 { ok, whatsapp: 'sent' | 'failed' | 'off', emailKey? } once the submission is accepted;
 // 4xx { ok: false, error } when it is rejected (the client then sends nothing else).
 
 const WINDOW_MS = 10 * 60 * 1000;
@@ -116,7 +122,8 @@ export async function POST(request) {
   }
 
   const whatsapp = await sendWhatsApp(`New message from praxel.space\n\nFrom: ${name}\nEmail: ${email}\n\n${message}`);
-  return json({ ok: true, whatsapp });
+  const emailKey = process.env.WEB3FORMS_KEY || process.env.VITE_WEB3FORMS_KEY || undefined;
+  return json({ ok: true, whatsapp, emailKey });
 }
 
 export function GET() {
