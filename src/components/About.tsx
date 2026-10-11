@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { gsap, prefersReducedMotion } from '../lib/motion';
-import { about, journey } from '../data';
+import { about, experience, journey } from '../data';
 import Split from './Split';
 
 export default function About() {
@@ -9,46 +9,64 @@ export default function About() {
   useLayoutEffect(() => {
     if (prefersReducedMotion) return;
     const ctx = gsap.context(() => {
-      // Words light up one by one as the reader scrolls through the section.
+      // Words darken one by one as the reader scrolls through the paragraph.
       gsap.fromTo(
         '.about-text .word',
-        { opacity: 0.12 },
+        { opacity: 0.15 },
         {
           opacity: 1,
           stagger: 0.1,
           ease: 'none',
-          scrollTrigger: { trigger: '.about-text', start: 'top 80%', end: 'bottom 45%', scrub: true },
+          scrollTrigger: { trigger: '.about-text', start: 'top 85%', end: 'bottom 55%', scrub: true },
         },
       );
-      gsap.from('.journey-item', {
-        y: 40,
+      gsap.from('.job-row', {
+        y: 30,
         opacity: 0,
-        stagger: 0.12,
-        duration: 0.9,
+        stagger: 0.08,
+        duration: 0.8,
         ease: 'power3.out',
-        scrollTrigger: { trigger: '.journey', start: 'top 85%' },
+        scrollTrigger: { trigger: '#experience', start: 'top 85%' },
       });
     }, root);
     return () => ctx.revert();
   }, []);
 
   return (
-    <section id="about" ref={root} data-scene="about" className="relative px-5 py-32 md:px-10 md:py-48">
-      <div className="grid gap-12 md:grid-cols-12">
-        <p className="eyebrow md:col-span-3">(01) — About</p>
-        <div className="md:col-span-9">
-          <p className="about-text text-3xl font-light leading-[1.15] tracking-tight md:text-6xl">
+    <section id="about" ref={root} data-scene="about" className="relative mx-auto max-w-[1280px] px-5 py-24 md:px-10">
+      <div className="flex flex-wrap gap-12">
+        <div className="min-w-0 flex-[1_1_320px]">
+          <h2 className="text-4xl font-semibold tracking-tight">About</h2>
+          <p className="about-text mt-5 text-xl leading-snug tracking-tight md:text-2xl">
             <Split text={about} by="word" />
           </p>
-          <ol className="journey mt-20 grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3">
+          <ol className="mt-8 flex gap-8 text-sm">
             {journey.map((j) => (
-              <li key={j.year} className="journey-item bg-bg/80 p-6 backdrop-blur-md md:p-8">
-                <p className="serif text-5xl text-accent">{j.year}</p>
-                <p className="mt-6 font-medium">{j.title}</p>
-                <p className="mt-1 text-sm text-muted">{j.text}</p>
+              <li key={j.year}>
+                <p className="font-semibold">{j.year}</p>
+                <p className="mt-1 text-muted">{j.title}</p>
               </li>
             ))}
           </ol>
+        </div>
+        <div id="experience" className="min-w-0 flex-[2_1_560px] scroll-mt-24">
+          <h2 className="mb-2 text-4xl font-semibold tracking-tight">Experience</h2>
+          <ul>
+            {experience.map((job) => (
+              <li
+                key={job.company + job.role}
+                className="job-row flex flex-wrap justify-between gap-x-6 gap-y-1 border-b border-line py-5 last:border-b-0"
+              >
+                <div className="min-w-0 flex-[1_1_320px]">
+                  <p className="text-lg font-medium">
+                    {job.role} <span className="text-muted">· {job.company}</span>
+                  </p>
+                  <p className="mt-1 text-sm text-muted">{job.points[0]}</p>
+                </div>
+                <p className="font-mono text-[13px] text-muted">{job.period}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

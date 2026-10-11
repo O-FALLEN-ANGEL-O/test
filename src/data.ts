@@ -7,7 +7,8 @@ export const profile = {
   phoneHref: 'tel:+918105561638',
   linkedin: 'https://www.linkedin.com/in/prajwal-d-l-118198370/',
   resume: '/resume.pdf',
-  github: 'O-FALLEN-ANGEL-O',
+  /** Stats from every account are added together. */
+  github: ['O-FALLEN-ANGEL-O', 'smhrimmy'],
   codingSince: 2022,
 };
 

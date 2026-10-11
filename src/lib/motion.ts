@@ -45,6 +45,8 @@ export const sceneState = {
   distort: 0.38,
   spin: 0,
   accent: 0.35,
+  /** 0 = use x/y/scale; 1 = parked at the viewport's top-right corner. */
+  corner: 0,
   pointerX: 0,
   pointerY: 0,
 };

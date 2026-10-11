@@ -36,34 +36,34 @@ function ContactForm() {
   };
 
   const field =
-    'w-full border-b border-line bg-transparent py-4 text-lg outline-none transition-colors placeholder:text-muted/70 focus:border-accent';
+    'w-full rounded-xl border border-[#5a5a5a] bg-transparent px-3.5 py-3 text-base text-white outline-none transition-colors focus:border-white';
 
   return (
-    <form onSubmit={submit} className="space-y-2">
+    <form onSubmit={submit} className="flex flex-col gap-3">
       <input type="checkbox" name="botcheck" className="hidden" tabIndex={-1} autoComplete="off" />
       <label className="block">
-        <span className="sr-only">Your name</span>
-        <input required name="name" autoComplete="name" placeholder="Your name" className={field} />
+        <span className="mb-1.5 block text-[13px] text-[#c9c9c6]">Name</span>
+        <input required name="name" autoComplete="name" className={field} />
       </label>
       <label className="block">
-        <span className="sr-only">Email address</span>
-        <input required type="email" name="email" autoComplete="email" placeholder="Email address" className={field} />
+        <span className="mb-1.5 block text-[13px] text-[#c9c9c6]">Email</span>
+        <input required type="email" name="email" autoComplete="email" className={field} />
       </label>
       <label className="block">
-        <span className="sr-only">Message</span>
-        <textarea required name="message" rows={4} placeholder="Tell me about your project" className={`${field} resize-none`} />
+        <span className="mb-1.5 block text-[13px] text-[#c9c9c6]">Message</span>
+        <textarea required name="message" rows={3} className={`${field} resize-none`} />
       </label>
-      <div className="flex items-center gap-6 pt-6">
+      <div className="flex flex-wrap items-center gap-6 pt-2">
         <Magnetic>
           <button
             type="submit"
             disabled={status === 'sending'}
-            className="rounded-full bg-accent px-8 py-4 font-medium text-bg transition-opacity disabled:opacity-60"
+            className="rounded-full bg-white px-6 py-3.5 text-[15px] font-medium text-ink transition-opacity disabled:opacity-60"
           >
             {status === 'sending' ? 'Sending…' : 'Send message'}
           </button>
         </Magnetic>
-        <p role="status" className="text-sm text-muted">
+        <p role="status" className="text-sm text-[#c9c9c6]">
           {status === 'sent' && 'Thanks — I’ll get back to you soon.'}
           {status === 'error' && `Something went wrong. Email me at ${profile.email}.`}
         </p>
@@ -92,49 +92,36 @@ export default function Contact() {
   const year = new Date().getFullYear();
 
   return (
-    <section id="contact" ref={root} data-scene="contact" className="relative flex min-h-[100svh] flex-col justify-between px-5 pt-32 md:px-10">
-      <div>
-        <p className="eyebrow">(05) — Contact</p>
-        <h2 className="contact-title mt-6 text-[15vw] font-medium uppercase leading-[0.85] tracking-[-0.05em] md:text-[10vw]">
-          <span className="line-mask">
-            <Split text="Let’s build" />
-          </span>
-          <span className="line-mask serif normal-case italic text-accent">
-            <Split text="something." />
-          </span>
-        </h2>
-      </div>
-
-      <div className="mt-20 grid gap-16 md:grid-cols-12">
-        <div className="space-y-8 md:col-span-5">
-          <a href={`mailto:${profile.email}`} className="link-underline serif block break-all text-3xl md:text-5xl">
-            {profile.email}
-          </a>
-          <dl className="grid grid-cols-2 gap-6 text-sm">
-            <div>
-              <dt className="eyebrow">Phone</dt>
-              <dd className="mt-2">
-                <a href={profile.phoneHref} className="link-underline">{profile.phone}</a>
-              </dd>
-            </div>
-            <div>
-              <dt className="eyebrow">Elsewhere</dt>
-              <dd className="mt-2 space-x-4">
-                <a href={profile.linkedin} target="_blank" rel="noreferrer" className="link-underline">LinkedIn ↗</a>
-                <a href={profile.resume} download="Prajwal-DL-Resume.pdf" className="link-underline">Résumé ↓</a>
-              </dd>
-            </div>
-          </dl>
+    <section id="contact" ref={root} data-scene="contact" className="relative mx-auto max-w-[1280px] px-5 pt-24 md:px-10">
+      <div className="flex flex-wrap gap-12 rounded-[28px] bg-ink p-8 text-white md:p-14">
+        <div className="flex-[1_1_360px]">
+          <h2 className="contact-title text-[clamp(40px,5vw,64px)] font-semibold leading-none tracking-[-0.04em]">
+            <span className="line-mask">
+              <Split text="Let’s build something." />
+            </span>
+          </h2>
+          <p className="mt-5">
+            <a href={`mailto:${profile.email}`} className="link-underline text-xl md:text-[22px]">
+              {profile.email}
+            </a>
+          </p>
+          <p className="mt-3 text-[15px] text-[#c9c9c6]">
+            <a href={profile.phoneHref} className="link-underline">{profile.phone}</a>
+            {' · '}
+            <a href={profile.linkedin} target="_blank" rel="noreferrer" className="link-underline text-white">LinkedIn ↗</a>
+            {' · '}
+            <a href={profile.resume} download="Prajwal-DL-Resume.pdf" className="link-underline text-white">Résumé ↓</a>
+          </p>
         </div>
-        <div className="rounded-3xl border border-line bg-bg/60 p-6 backdrop-blur-xl md:col-span-6 md:col-start-7 md:p-10">
+        <div className="flex-[1_1_360px]">
           <ContactForm />
         </div>
       </div>
 
-      <footer className="mt-24 flex flex-col gap-4 border-t border-line py-8 text-sm text-muted md:flex-row md:items-center md:justify-between">
+      <footer className="flex flex-wrap justify-between gap-3 py-8 text-[13px] text-muted">
         <p>© {year} Prajwal D L</p>
-        <p className="serif text-base italic">Full stack developer · Debugging specialist · Mangalore</p>
-        <button onClick={() => scrollToTarget(0)} className="link-underline self-start md:self-auto">
+        <p>Full stack developer · Mangalore</p>
+        <button onClick={() => scrollToTarget(0)} className="link-underline">
           Back to top ↑
         </button>
       </footer>

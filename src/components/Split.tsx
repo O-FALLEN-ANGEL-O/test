@@ -8,7 +8,9 @@ export default function Split({ text, by = 'char', className }: Props) {
       {words.map((word, wi) => (
         <span key={wi} aria-hidden="true" className="inline-block whitespace-nowrap">
           {by === 'word' ? (
-            <span className="word">{word}</span>
+            <span className="inline-block overflow-hidden pb-[0.08em] align-top">
+              <span className="word">{word}</span>
+            </span>
           ) : (
             [...word].map((c, ci) => (
               <span key={ci} className="char">

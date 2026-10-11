@@ -4,9 +4,7 @@ import Preloader from './components/Preloader';
 import Cursor from './components/Cursor';
 import Nav from './components/Nav';
 import Hero from './components/Hero';
-import Marquee from './components/Marquee';
 import About from './components/About';
-import Experience from './components/Experience';
 import Skills from './components/Skills';
 import Projects from './components/Projects';
 import Contact from './components/Contact';
@@ -18,12 +16,12 @@ type Keyframe = Partial<typeof sceneState>;
 
 /** Where the 3D blob sits while each section is on screen. */
 const keyframes: Record<string, Keyframe> = {
-  hero: { x: 1.15, y: 0.55, z: 0, scale: 1, distort: 0.38, spin: 0, accent: 0.35 },
-  about: { x: -1.7, y: 0.1, z: -1, scale: 0.75, distort: 0.55, spin: 0.6, accent: 0.15 },
-  experience: { x: 0, y: -1.6, z: -3, scale: 1.25, distort: 0.25, spin: 1.2, accent: 0.6 },
-  skills: { x: 1.75, y: 0, z: -2.5, scale: 0.85, distort: 0.7, spin: 1.8, accent: 0.2 },
-  projects: { x: 2.4, y: 1.2, z: -4, scale: 0.9, distort: 0.3, spin: 2.4, accent: 0.4 },
-  contact: { x: 2.1, y: 1.15, z: -1.5, scale: 0.85, distort: 0.6, spin: 3, accent: 1 },
+  hero: { x: 1.75, y: 0, z: 0, scale: 0.85, distort: 0.38, spin: 0, corner: 0 },
+  // After the hero it parks in the top-right corner so it never sits behind text.
+  about: { distort: 0.55, spin: 0.8, corner: 1 },
+  projects: { distort: 0.3, spin: 1.6, corner: 1 },
+  skills: { distort: 0.7, spin: 2.2, corner: 1 },
+  contact: { distort: 0.6, spin: 3, corner: 1 },
 };
 
 function supportsWebGL() {
@@ -94,7 +92,7 @@ export default function App() {
         <div
           className="fixed inset-0 -z-0"
           aria-hidden="true"
-          style={{ background: 'radial-gradient(40% 40% at 70% 35%, rgb(255 90 31 / .18), transparent 70%)' }}
+          style={{ background: 'radial-gradient(30% 30% at 72% 30%, rgb(10 10 10 / .08), transparent 70%)' }}
         />
       )}
       <div className="scroll-progress fixed inset-x-0 top-0 z-[55] h-[2px] origin-left scale-x-0 bg-accent" />
@@ -104,12 +102,10 @@ export default function App() {
       <Nav />
       <main className="relative z-10">
         <Hero ready={ready} />
-        <Marquee />
-        <About />
         <Stats />
-        <Experience />
-        <Skills />
+        <About />
         <Projects />
+        <Skills />
         <Contact />
       </main>
     </>

@@ -1,31 +1,30 @@
 # praxel.space — Portfolio v2
 
-Personal portfolio of **Prajwal D L**, full stack developer. A monochrome, single-page site built around one scroll-driven 3D scene.
+Personal portfolio of **Prajwal D L**, full stack developer. A bright, compact black-and-white single page built around one scroll-driven 3D chrome blob.
 
 ## Stack
 
 - **Vite + React 19 + TypeScript**
 - **Tailwind CSS v4** for styling
-- **three.js / React Three Fiber / drei** for the liquid-glass blob, accent ring and particle field
+- **three.js / React Three Fiber / drei** for the chrome blob, ink ring and particle field
 - **GSAP ScrollTrigger + Lenis** for smooth scrolling, pinned sections and scrubbed animation
 
 ## What happens on scroll
 
-| Section    | Effect |
-|------------|--------|
-| Preloader  | Counter + wipe reveal |
-| Hero       | Per-letter name reveal; blob reacts to the pointer; content drifts away on scroll |
-| About      | Paragraph lights up word by word |
-| Stats      | Career numbers + live GitHub stats count up on scroll |
-| Experience | Section pins and scrolls horizontally; cards swing in from a 3D angle |
-| Skills     | Draggable 3D tag sphere |
-| Projects   | 3 featured cards stack and recede into depth; the rest sit in a compact index with a cursor-following preview |
-| Contact    | Big type reveal, magnetic buttons, working form |
+| Section            | Effect |
+|--------------------|--------|
+| Preloader          | Counter + wipe reveal |
+| Hero               | Word-by-word headline reveal; blob reacts to the pointer; content drifts away on scroll |
+| Stats              | Career numbers + combined live GitHub stats count up on scroll |
+| About & Experience | Paragraph darkens word by word; job rows slide in |
+| Projects           | All projects drift left → right in an endless strip; pauses on hover (static scroll strip with reduced motion) |
+| Stack              | Grouped skill chips |
+| Contact            | Black block with type reveal, magnetic button, working form |
 
-The blob's position, scale, distortion, spin and accent glow are keyframed per section (`keyframes` in `src/App.tsx`) and scrubbed between sections.
+The blob's shape and spin are keyframed per section (`keyframes` in `src/App.tsx`) and scrubbed between sections; after the hero it parks in the viewport's top-right corner so it never sits behind text (always, on phones).
 
 **Accessibility & performance**
-- Respects `prefers-reduced-motion`: no smooth scroll, no pinning, static blob.
+- Respects `prefers-reduced-motion`: no smooth scroll, no auto-scrolling strip, static blob.
 - Touch devices get fewer particles, lower geometry detail and capped pixel ratio.
 - three.js lives in a lazily loaded chunk, so text renders before the 3D does; without WebGL a CSS gradient is shown instead.
 
@@ -50,11 +49,11 @@ Without a key, submitting the form opens the visitor's email client with the mes
 
 ## GitHub stats
 
-Public repositories, stars, followers and last-year contributions for `profile.github` (in `src/data.ts`) are fetched in the visitor's browser from the GitHub API and [github-contributions-api](https://github.com/grubersjoe/github-contributions-api), then cached in `localStorage` for 6 hours to stay under GitHub's anonymous rate limit. If the requests fail, the GitHub row is hidden.
+Public repositories, stars, followers and last-year contributions for every account in `profile.github` (in `src/data.ts`) are added together. They are fetched in the visitor's browser from the GitHub API and [github-contributions-api](https://github.com/grubersjoe/github-contributions-api), then cached in `localStorage` for 6 hours to stay under GitHub's anonymous rate limit. Accounts that fail to load are skipped; if all fail, the GitHub block is hidden.
 
 ## Editing content
 
-All text — bio, experience, skills, projects — is in `src/data.ts`. `projects` are the featured cards; `moreProjects` fill the compact list. Project screenshots are in `public/projects/`, the résumé is `public/resume.pdf`, and the social preview image is `public/og.jpg`.
+All text — bio, experience, skills, projects — is in `src/data.ts`. `projects` lead the project strip, followed by `moreProjects`. Project screenshots are in `public/projects/`, the résumé is `public/resume.pdf`, and the social preview image is `public/og.jpg`.
 
 ## Deploy
 

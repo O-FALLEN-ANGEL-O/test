@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { gsap, prefersReducedMotion } from '../lib/motion';
 import { experience, moreProjects, profile, projects, skillGroups } from '../data';
-import { fetchGitHubStats, type GitHubStats } from '../lib/github';
+import { fetchCombinedStats, type GitHubStats } from '../lib/github';
 
 /** Counts up from 0 the first time it scrolls into view (or when its value arrives). */
 function Counter({ value, suffix = '' }: { value: number | null; suffix?: string }) {
@@ -39,7 +39,7 @@ function Counter({ value, suffix = '' }: { value: number | null; suffix?: string
   return (
     <span className="tabular-nums">
       <span ref={ref}>{value === null ? '—' : '0'}</span>
-      {value !== null && suffix && <span className="text-accent">{suffix}</span>}
+      {value !== null && suffix && <span>{suffix}</span>}
     </span>
   );
 }
@@ -51,7 +51,7 @@ export default function Stats() {
   const [ghFailed, setGhFailed] = useState(false);
 
   useEffect(() => {
-    fetchGitHubStats(profile.github).then(setGh, () => setGhFailed(true));
+    fetchCombinedStats(profile.github).then(setGh, () => setGhFailed(true));
   }, []);
 
   const techCount = new Set(skillGroups.flatMap((g) => g.items)).size;
@@ -62,45 +62,53 @@ export default function Stats() {
     { label: 'Technologies', value: techCount, suffix: '+' },
   ];
   const github: Tile[] = [
-    { label: 'Public repositories', value: gh?.repos ?? null },
+    { label: 'Public repos', value: gh?.repos ?? null },
     { label: 'Contributions this year', value: gh?.contributions ?? null },
     { label: 'Stars earned', value: gh?.stars ?? null },
     { label: 'Followers', value: gh?.followers ?? null },
   ];
 
-  const tile = (t: Tile) => (
-    <div key={t.label} className="bg-bg/80 p-5 backdrop-blur-md md:p-8">
-      <p className="text-4xl font-medium tracking-[-0.04em] md:text-7xl">
-        <Counter value={t.value} suffix={t.suffix} />
-      </p>
-      <p className="eyebrow mt-4">{t.label}</p>
-    </div>
-  );
-
   return (
-    <section id="stats" className="relative px-5 pb-32 md:px-10 md:pb-48" aria-label="Stats">
-      <div className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line grid-cols-2 lg:grid-cols-4">
-        {career.map(tile)}
+    <section id="stats" className="relative mx-auto max-w-[1280px] px-5 md:px-10" aria-label="Stats">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[20px] border border-line bg-line lg:grid-cols-4">
+        {career.map((t) => (
+          <div key={t.label} className="bg-bg p-5 md:p-7">
+            <p className="text-4xl font-semibold leading-none tracking-[-0.04em] md:text-[56px]">
+              <Counter value={t.value} suffix={t.suffix} />
+            </p>
+            <p className="mt-3 text-sm text-muted">{t.label}</p>
+          </div>
+        ))}
       </div>
       {!ghFailed && (
-        <>
-          <div className="mt-14 mb-6 flex items-center justify-between">
-            <p className="eyebrow flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-accent" /> Live from GitHub
-            </p>
-            <a
-              href={`https://github.com/${profile.github}`}
-              target="_blank"
-              rel="noreferrer"
-              className="link-underline font-mono text-sm"
-            >
-              @{profile.github} ↗
-            </a>
+        <div className="mt-4 flex flex-wrap items-center gap-8 rounded-[20px] bg-surface p-5 md:p-7">
+          <div className="flex-[1_1_260px]">
+            <p className="eyebrow">GitHub · {profile.github.length} accounts combined · live</p>
+            <div className="mt-3.5 flex flex-wrap gap-2">
+              {profile.github.map((u) => (
+                <a
+                  key={u}
+                  href={`https://github.com/${u}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-[#dcdcd8] bg-bg px-3.5 py-2 font-mono text-[13px] transition-colors hover:border-ink"
+                >
+                  @{u} ↗
+                </a>
+              ))}
+            </div>
           </div>
-          <div className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line grid-cols-2 lg:grid-cols-4">
-            {github.map(tile)}
+          <div className="grid flex-[3_1_560px] grid-cols-2 gap-6 sm:grid-cols-4">
+            {github.map((t) => (
+              <div key={t.label}>
+                <p className="text-4xl font-semibold leading-none tracking-[-0.04em] md:text-[44px]">
+                  <Counter value={t.value} />
+                </p>
+                <p className="mt-2 text-sm text-muted">{t.label}</p>
+              </div>
+            ))}
           </div>
-        </>
+        </div>
       )}
     </section>
   );

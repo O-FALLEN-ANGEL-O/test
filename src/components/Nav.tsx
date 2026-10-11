@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { scrollToTarget } from '../lib/motion';
+import { profile } from '../data';
 
 const links = [
   ['About', '#about'],
@@ -36,13 +37,13 @@ export default function Nav() {
 
   return (
     <>
-    <header className="fixed inset-x-0 top-0 z-50 mix-blend-difference">
-      <nav className="flex items-center justify-between px-5 py-5 md:px-10" aria-label="Primary">
-        <a href="#top" onClick={go('#top')} className="serif text-2xl italic leading-none">
-          Prajwal<span className="text-accent">.</span>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/80 backdrop-blur-md">
+      <nav className="mx-auto flex max-w-[1280px] items-center justify-between px-5 py-4 md:px-10" aria-label="Primary">
+        <a href="#top" onClick={go('#top')} className="text-lg font-semibold tracking-tight">
+          Prajwal D L
         </a>
         <span className="eyebrow hidden md:inline">Mangalore · {time} IST</span>
-        <ul className="hidden gap-7 text-sm md:flex">
+        <ul className="hidden items-center gap-7 text-sm md:flex">
           {links.map(([label, href]) => (
             <li key={href}>
               <a href={href} onClick={go(href)} className="link-underline">
@@ -50,6 +51,11 @@ export default function Nav() {
               </a>
             </li>
           ))}
+          <li>
+            <a href={profile.resume} download="Prajwal-DL-Resume.pdf" className="rounded-full bg-ink px-4 py-2.5 font-medium text-bg">
+              Résumé ↓
+            </a>
+          </li>
         </ul>
         <button
           className="eyebrow !text-ink md:hidden"

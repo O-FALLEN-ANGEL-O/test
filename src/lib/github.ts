@@ -18,7 +18,7 @@ function readCache(key: string): GitHubStats | null {
   }
 }
 
-export async function fetchGitHubStats(user: string): Promise<GitHubStats> {
+async function fetchOne(user: string): Promise<GitHubStats> {
   const key = `gh-stats:${user}`;
   const cached = readCache(key);
   if (cached) return cached;
@@ -44,4 +44,17 @@ export async function fetchGitHubStats(user: string): Promise<GitHubStats> {
     /* storage unavailable — fine, we just refetch next visit */
   }
   return data;
+}
+
+/** Sums stats across accounts; accounts that fail to load are skipped. */
+export async function fetchCombinedStats(users: string[]): Promise<GitHubStats> {
+  const results = await Promise.allSettled(users.map(fetchOne));
+  const ok = results.flatMap((r) => (r.status === 'fulfilled' ? [r.value] : []));
+  if (!ok.length) throw new Error('GitHub unavailable');
+  return ok.reduce((a, b) => ({
+    repos: a.repos + b.repos,
+    stars: a.stars + b.stars,
+    followers: a.followers + b.followers,
+    contributions: a.contributions + b.contributions,
+  }));
 }
