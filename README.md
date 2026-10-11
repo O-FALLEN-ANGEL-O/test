@@ -19,7 +19,7 @@ Personal portfolio of **Prajwal D L**, full stack developer. A bright, compact b
 | About & Experience | Paragraph darkens word by word; job timeline with durations, each role expands to its details |
 | Projects           | Endless strip drifting left → right; drag or swipe to browse, click a card for a details dialog with a live-site link (no drift with reduced motion) |
 | Stack              | Grouped skill chips |
-| Contact            | Black block with type reveal, magnetic button, working form |
+| Contact            | Black block; on send the form becomes a letter, folds into an envelope, seals with a stamp and flies off, then a ✓ confirmation |
 
 The blob's shape and spin are keyframed per section (`keyframes` in `src/App.tsx`) and scrubbed between sections; after the hero it parks in the viewport's top-right corner so it never sits behind text (always, on phones).
 
@@ -39,13 +39,14 @@ npm run preview
 
 ## Contact form
 
-The form posts to [Web3Forms](https://web3forms.com). Create a free access key for `contact@praxel.space` and set it as an environment variable (locally in `.env`, and in your hosting dashboard):
+On submit the message goes out on two channels in parallel; either one getting through counts as sent.
 
-```
-VITE_WEB3FORMS_KEY=your-access-key
-```
+1. **Email** via [Web3Forms](https://web3forms.com) — create a free access key for `contact@praxel.space` and set `VITE_WEB3FORMS_KEY`.
+2. **WhatsApp** via the Vercel Function in `api/contact.js`, which forwards the message to your phone through [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/). The function validates input, drops honeypot bots and rate-limits each IP to 5 messages per 10 minutes. To set it up:
+   - Add CallMeBot's number to your phone contacts and send it the activation message from WhatsApp, as described on their page. You get an API key back.
+   - In Vercel → Project → Settings → Environment Variables, add `CALLMEBOT_PHONE` (country code + number, digits only, e.g. `918105561638`) and `CALLMEBOT_APIKEY`, then redeploy.
 
-Without a key, submitting the form opens the visitor's email client with the message pre-filled.
+The keys for the WhatsApp step stay on the server, so visitors can never see them. If neither channel is configured or reachable, the envelope unwinds and the visitor's mail app opens with the message pre-filled (or, when an email key is set, an error asks them to email directly). `npm run dev` doesn't run the function; use `vercel dev` to try WhatsApp locally.
 
 ## GitHub stats
 
