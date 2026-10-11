@@ -12,9 +12,37 @@ type Status = 'idle' | 'sending' | 'sent' | 'error' | 'blocked';
 type Outcome = 'ok' | 'mailto' | 'error' | 'blocked';
 
 /**
+ * Keyless email: FormSubmit (https://formsubmit.co) relays the message straight to
+ * profile.email. The very first submission makes FormSubmit email that address an
+ * activation link; once clicked, every message is delivered.
+ */
+async function sendViaFormSubmit(fields: { name: string; email: string; message: string }) {
+  try {
+    const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(profile.email)}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify({
+        ...fields,
+        _subject: `Portfolio enquiry from ${fields.name}`,
+        _replyto: fields.email,
+        _template: 'table',
+        _captcha: 'false', // our own reCAPTCHA + server checks already ran
+      }),
+    });
+    const j = await res.json();
+    if (String(j.success) === 'true') return true;
+    console.warn('FormSubmit did not deliver the message:', j.message);
+  } catch (err) {
+    console.warn('FormSubmit unreachable:', err);
+  }
+  return false;
+}
+
+/**
  * Our /api/contact function checks the submission first (validation, rate limit,
  * reCAPTCHA) and forwards it to WhatsApp. Only once it is accepted does the email
- * copy go out through Web3Forms. Either channel getting through counts as sent.
+ * copy go out — through FormSubmit (no key needed), or Web3Forms when a key is set.
+ * Either channel getting through counts as sent.
  */
 async function deliver(data: FormData): Promise<Outcome> {
   const fields = {
@@ -44,6 +72,7 @@ async function deliver(data: FormData): Promise<Outcome> {
   }
 
   if (emailKey) {
+    // Optional: Web3Forms, when an access key is configured.
     const mail = new FormData();
     Object.entries(fields).forEach(([k, v]) => mail.append(k, v));
     mail.append('access_key', emailKey);
@@ -61,10 +90,11 @@ async function deliver(data: FormData): Promise<Outcome> {
     } catch (err) {
       console.warn('Web3Forms unreachable:', err);
     }
+  } else if (await sendViaFormSubmit(fields)) {
+    return 'ok';
   }
   if (whatsapp) return 'ok';
-  // No channel is configured: hand off to the visitor's mail app rather than lose the message.
-  return emailKey ? 'error' : 'mailto';
+  return 'error';
 }
 
 function ContactForm() {
