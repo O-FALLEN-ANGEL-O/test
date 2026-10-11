@@ -12,52 +12,89 @@ type Status = 'idle' | 'sending' | 'sent' | 'error' | 'blocked';
 type Outcome = 'ok' | 'mailto' | 'error' | 'blocked';
 
 /**
+ * Keyless email: FormSubmit (https://formsubmit.co) relays the message straight to
+ * profile.email. The very first submission makes FormSubmit email that address an
+ * activation link; once clicked, every message is delivered.
+ */
+async function sendViaFormSubmit(fields: { name: string; email: string; message: string }) {
+  try {
+    const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(profile.email)}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify({
+        ...fields,
+        _subject: `Portfolio enquiry from ${fields.name}`,
+        _replyto: fields.email,
+        _template: 'table',
+        _captcha: 'false', // our own reCAPTCHA + server checks already ran
+      }),
+    });
+    const j = await res.json();
+    if (String(j.success) === 'true') return true;
+    console.warn('FormSubmit did not deliver the message:', j.message);
+  } catch (err) {
+    console.warn('FormSubmit unreachable:', err);
+  }
+  return false;
+}
+
+/**
  * Our /api/contact function checks the submission first (validation, rate limit,
  * reCAPTCHA) and forwards it to WhatsApp. Only once it is accepted does the email
- * copy go out through Web3Forms. Either channel getting through counts as sent.
+ * copy go out — through FormSubmit (no key needed), or Web3Forms when a key is set.
+ * Either channel getting through counts as sent.
  */
 async function deliver(data: FormData): Promise<Outcome> {
   const fields = {
     name: String(data.get('name') ?? ''),
     email: String(data.get('email') ?? ''),
     message: String(data.get('message') ?? ''),
-    botcheck: data.get('botcheck') ? 'on' : '',
   };
 
-  let accepted = false;
+  // The build-time key is optional; the function also hands one out at runtime.
+  let emailKey = FORM_KEY;
   let whatsapp = false;
   try {
     const res = await fetch('/api/contact', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ...fields, captcha: await captchaToken() }),
+      body: JSON.stringify({ ...fields, botcheck: data.get('botcheck') ? 'on' : '', captcha: await captchaToken() }),
     });
     // 4xx = the server looked at it and said no (bot, invalid, too many): send nothing else.
     if (res.status >= 400 && res.status < 500 && res.status !== 404) return 'blocked';
     if (res.ok) {
       const j = await res.json();
-      accepted = true;
       whatsapp = j.whatsapp === 'sent';
+      emailKey ||= j.emailKey;
     }
   } catch {
     /* function unreachable (e.g. plain `vite dev`) — fall through to email */
   }
 
-  if (FORM_KEY) {
+  if (emailKey) {
+    // Optional: Web3Forms, when an access key is configured.
     const mail = new FormData();
     Object.entries(fields).forEach(([k, v]) => mail.append(k, v));
-    mail.append('access_key', FORM_KEY);
+    mail.append('access_key', emailKey);
     mail.append('subject', `Portfolio enquiry from ${fields.name}`);
+    mail.append('from_name', 'praxel.space contact form');
     try {
-      const j = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: mail }).then((r) => r.json());
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { accept: 'application/json' },
+        body: mail,
+      });
+      const j = await res.json();
       if (j.success) return 'ok';
-    } catch {
-      /* handled below */
+      console.warn('Web3Forms rejected the message:', j.message);
+    } catch (err) {
+      console.warn('Web3Forms unreachable:', err);
     }
+  } else if (await sendViaFormSubmit(fields)) {
+    return 'ok';
   }
   if (whatsapp) return 'ok';
-  // Nothing configured or reachable: fall back to the visitor's own mail app.
-  return FORM_KEY || accepted ? 'error' : 'mailto';
+  return 'error';
 }
 
 function ContactForm() {

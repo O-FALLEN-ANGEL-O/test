@@ -46,9 +46,9 @@ Submissions go to the Vercel Function in `api/contact.js` first. It:
 3. verifies an invisible **reCAPTCHA v3** token with Google (score ≥ `RECAPTCHA_MIN_SCORE`, default 0.5, action `contact`);
 4. forwards the message to your **WhatsApp** through [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/).
 
-Only once the function accepts it does the browser send the **email** copy through [Web3Forms](https://web3forms.com). Either channel getting through counts as sent. If the function rejects it, nothing is sent and the visitor sees a spam-check message.
+Only once the function accepts it does the browser send the **email** copy. By default that goes through [FormSubmit](https://formsubmit.co), which needs **no account or key**: it relays straight to `profile.email` in `src/data.ts`. The very first message makes FormSubmit email that address an **activation link** — click it once and every later message is delivered. If a Web3Forms key is configured (see below), Web3Forms is used instead. Either channel getting through counts as sent. If the function rejects it, nothing is sent and the visitor sees a spam-check message.
 
-Setup (Vercel → Project → Settings → Environment Variables, then redeploy):
+Setup (Vercel → Project → Settings → Environment Variables, tick **Production**, then redeploy — Vercel only applies env changes to new deployments):
 
 | Variable | Where it comes from | Visibility |
 |---|---|---|
@@ -56,15 +56,15 @@ Setup (Vercel → Project → Settings → Environment Variables, then redeploy)
 | `RECAPTCHA_SECRET` | same page, secret key | server only |
 | `CALLMEBOT_PHONE` | your WhatsApp number, country code + digits, e.g. `918105561638` | server only |
 | `CALLMEBOT_APIKEY` | sent by CallMeBot after you message their number from WhatsApp | server only |
-| `VITE_WEB3FORMS_KEY` | [Web3Forms](https://web3forms.com) access key for `contact@praxel.space` | public (in the page) |
+| `WEB3FORMS_KEY` | optional — only if you prefer [Web3Forms](https://web3forms.com) over the keyless FormSubmit default (`VITE_WEB3FORMS_KEY` also works) | handed to the browser after a submission is accepted |
 
-Each piece is optional: without reCAPTCHA keys the captcha step is skipped, without CallMeBot keys WhatsApp is skipped, and with nothing configured the visitor's mail app opens with the message pre-filled. `npm run dev` doesn't run the function; use `vercel dev` to try it locally.
+Each piece is optional: without reCAPTCHA keys the captcha step is skipped, and without CallMeBot keys WhatsApp is skipped. Email works with no configuration at all. `npm run dev` doesn't run the function; use `vercel dev` to try it locally.
 
 ## Security
 
-`vercel.json` sends a strict Content-Security-Policy (scripts only from this site and Google's reCAPTCHA; network calls only to GitHub, the contributions API, Web3Forms and reCAPTCHA; no framing), plus HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` and `Cross-Origin-Opener-Policy`. If you add a new third-party script, font or API, add its origin to the CSP or the browser will block it.
+`vercel.json` sends a strict Content-Security-Policy (scripts only from this site and Google's reCAPTCHA; network calls only to GitHub, the contributions API, FormSubmit, Web3Forms and reCAPTCHA; no framing), plus HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` and `Cross-Origin-Opener-Policy`. If you add a new third-party script, font or API, add its origin to the CSP or the browser will block it.
 
-The Web3Forms key is public by design (it's how Web3Forms works), so someone could post to Web3Forms directly and skip this site's checks; Web3Forms applies its own spam filtering to those. Everything that reaches your WhatsApp has passed the server checks above.
+The email relays are public endpoints by design, so someone could post to FormSubmit or Web3Forms directly and skip this site's checks; both apply their own spam filtering to those. Everything that reaches your WhatsApp has passed the server checks above.
 
 ## GitHub stats
 
