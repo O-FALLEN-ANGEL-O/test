@@ -163,3 +163,8 @@ body {
   background: rgb(10 10 10 / 0.45);
   backdrop-filter: blur(6px);
 }
+
+/* reCAPTCHA v3 badge: hidden, with Google's required notice shown under the form instead. */
+.grecaptcha-badge {
+  visibility: hidden;
+}

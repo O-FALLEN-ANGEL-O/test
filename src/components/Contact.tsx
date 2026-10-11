@@ -1,18 +1,20 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { gsap, prefersReducedMotion, scrollToTarget } from '../lib/motion';
 import { profile } from '../data';
 import Split from './Split';
 import Magnetic from './Magnetic';
+import { captchaToken, loadRecaptcha, RECAPTCHA_SITE_KEY } from '../lib/recaptcha';
 
 const FORM_KEY = import.meta.env.VITE_WEB3FORMS_KEY as string | undefined;
 
-type Status = 'idle' | 'sending' | 'sent' | 'error';
-type Outcome = 'ok' | 'mailto' | 'error';
+type Status = 'idle' | 'sending' | 'sent' | 'error' | 'blocked';
+type Outcome = 'ok' | 'mailto' | 'error' | 'blocked';
 
 /**
- * Sends the message by email (Web3Forms, when a key is set) and to WhatsApp (our
- * /api/contact function) in parallel. Either channel getting through counts.
+ * Our /api/contact function checks the submission first (validation, rate limit,
+ * reCAPTCHA) and forwards it to WhatsApp. Only once it is accepted does the email
+ * copy go out through Web3Forms. Either channel getting through counts as sent.
  */
 async function deliver(data: FormData): Promise<Outcome> {
   const fields = {
@@ -21,28 +23,41 @@ async function deliver(data: FormData): Promise<Outcome> {
     message: String(data.get('message') ?? ''),
     botcheck: data.get('botcheck') ? 'on' : '',
   };
-  const tasks: Promise<unknown>[] = [
-    fetch('/api/contact', {
+
+  let accepted = false;
+  let whatsapp = false;
+  try {
+    const res = await fetch('/api/contact', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(fields),
-    }).then((r) => (r.ok ? r : Promise.reject(r.status))),
-  ];
+      body: JSON.stringify({ ...fields, captcha: await captchaToken() }),
+    });
+    // 4xx = the server looked at it and said no (bot, invalid, too many): send nothing else.
+    if (res.status >= 400 && res.status < 500 && res.status !== 404) return 'blocked';
+    if (res.ok) {
+      const j = await res.json();
+      accepted = true;
+      whatsapp = j.whatsapp === 'sent';
+    }
+  } catch {
+    /* function unreachable (e.g. plain `vite dev`) — fall through to email */
+  }
+
   if (FORM_KEY) {
     const mail = new FormData();
     Object.entries(fields).forEach(([k, v]) => mail.append(k, v));
     mail.append('access_key', FORM_KEY);
     mail.append('subject', `Portfolio enquiry from ${fields.name}`);
-    tasks.push(
-      fetch('https://api.web3forms.com/submit', { method: 'POST', body: mail })
-        .then((r) => r.json())
-        .then((j) => (j.success ? j : Promise.reject(j.message))),
-    );
+    try {
+      const j = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: mail }).then((r) => r.json());
+      if (j.success) return 'ok';
+    } catch {
+      /* handled below */
+    }
   }
-  const results = await Promise.allSettled(tasks);
-  if (results.some((r) => r.status === 'fulfilled')) return 'ok';
+  if (whatsapp) return 'ok';
   // Nothing configured or reachable: fall back to the visitor's own mail app.
-  return FORM_KEY ? 'error' : 'mailto';
+  return FORM_KEY || accepted ? 'error' : 'mailto';
 }
 
 function ContactForm() {
@@ -57,6 +72,21 @@ function ContactForm() {
   const done = useRef<HTMLDivElement>(null);
   const tick = useRef<SVGPathElement>(null);
   const tl = useRef<gsap.core.Timeline | null>(null);
+
+  // Fetch reCAPTCHA as the form approaches the viewport, so the token is ready on submit.
+  useEffect(() => {
+    if (!RECAPTCHA_SITE_KEY || !formRef.current) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        loadRecaptcha().catch(() => {});
+        io.disconnect();
+      },
+      { rootMargin: '600px 0px' },
+    );
+    io.observe(formRef.current);
+    return () => io.disconnect();
+  }, []);
 
   /** Form → letter → folded into an envelope → sealed. Pauses there until the send settles. */
   const buildTimeline = (onSealed: () => void) => {
@@ -111,7 +141,7 @@ function ContactForm() {
     }
     // Unwind the envelope back into the form, keeping what the visitor typed.
     const settle = () => {
-      setStatus(outcome === 'error' ? 'error' : 'idle');
+      setStatus(outcome === 'mailto' ? 'idle' : outcome === 'blocked' ? 'blocked' : 'error');
       if (outcome === 'mailto') {
         const body = `${message}\n\n— ${name} (${data.get('email')})`;
         window.location.href = `mailto:${profile.email}?subject=${encodeURIComponent('Portfolio enquiry')}&body=${encodeURIComponent(body)}`;
@@ -135,7 +165,14 @@ function ContactForm() {
 
   return (
     <div className="relative" style={{ perspective: '1000px' }}>
-      <form ref={formRef} onSubmit={submit} className="flex flex-col gap-3" inert={sent || status === 'sending'} aria-hidden={sent || undefined}>
+      <form
+        ref={formRef}
+        onSubmit={submit}
+        onFocus={() => loadRecaptcha().catch(() => {})}
+        className="flex flex-col gap-3"
+        inert={sent || status === 'sending'}
+        aria-hidden={sent || undefined}
+      >
         <input type="checkbox" name="botcheck" className="hidden" tabIndex={-1} autoComplete="off" />
         <label className="block">
           <span className="mb-1.5 block text-[13px] text-[#c9c9c6]">Name</span>
@@ -165,8 +202,22 @@ function ContactForm() {
           </Magnetic>
           <p role="status" className="text-sm text-[#c9c9c6]">
             {status === 'error' && `Couldn’t send just now — please email ${profile.email}.`}
+            {status === 'blocked' && `That didn’t pass our spam check. Please try again, or email ${profile.email}.`}
           </p>
         </div>
+        {RECAPTCHA_SITE_KEY && (
+          <p className="text-xs leading-relaxed text-[#9a9a96]">
+            Protected by reCAPTCHA — Google’s{' '}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="underline text-[#c9c9c6]">
+              Privacy Policy
+            </a>{' '}
+            and{' '}
+            <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer" className="underline text-[#c9c9c6]">
+              Terms
+            </a>{' '}
+            apply.
+          </p>
+        )}
       </form>
 
       {/* The envelope animation, layered over the form. */}

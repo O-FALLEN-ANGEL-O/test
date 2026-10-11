@@ -39,14 +39,32 @@ npm run preview
 
 ## Contact form
 
-On submit the message goes out on two channels in parallel; either one getting through counts as sent.
+Submissions go to the Vercel Function in `api/contact.js` first. It:
 
-1. **Email** via [Web3Forms](https://web3forms.com) — create a free access key for `contact@praxel.space` and set `VITE_WEB3FORMS_KEY`.
-2. **WhatsApp** via the Vercel Function in `api/contact.js`, which forwards the message to your phone through [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/). The function validates input, drops honeypot bots and rate-limits each IP to 5 messages per 10 minutes. To set it up:
-   - Add CallMeBot's number to your phone contacts and send it the activation message from WhatsApp, as described on their page. You get an API key back.
-   - In Vercel → Project → Settings → Environment Variables, add `CALLMEBOT_PHONE` (country code + number, digits only, e.g. `918105561638`) and `CALLMEBOT_APIKEY`, then redeploy.
+1. rejects posts from other sites, bodies over 8 KB, invalid fields and honeypot bots;
+2. rate-limits each IP to 5 messages per 10 minutes;
+3. verifies an invisible **reCAPTCHA v3** token with Google (score ≥ `RECAPTCHA_MIN_SCORE`, default 0.5, action `contact`);
+4. forwards the message to your **WhatsApp** through [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/).
 
-The keys for the WhatsApp step stay on the server, so visitors can never see them. If neither channel is configured or reachable, the envelope unwinds and the visitor's mail app opens with the message pre-filled (or, when an email key is set, an error asks them to email directly). `npm run dev` doesn't run the function; use `vercel dev` to try WhatsApp locally.
+Only once the function accepts it does the browser send the **email** copy through [Web3Forms](https://web3forms.com). Either channel getting through counts as sent. If the function rejects it, nothing is sent and the visitor sees a spam-check message.
+
+Setup (Vercel → Project → Settings → Environment Variables, then redeploy):
+
+| Variable | Where it comes from | Visibility |
+|---|---|---|
+| `VITE_RECAPTCHA_SITE_KEY` | [reCAPTCHA admin](https://www.google.com/recaptcha/admin) → new site, type **Score based (v3)**, domains `praxel.space` + `vercel.app` | public (in the page) |
+| `RECAPTCHA_SECRET` | same page, secret key | server only |
+| `CALLMEBOT_PHONE` | your WhatsApp number, country code + digits, e.g. `918105561638` | server only |
+| `CALLMEBOT_APIKEY` | sent by CallMeBot after you message their number from WhatsApp | server only |
+| `VITE_WEB3FORMS_KEY` | [Web3Forms](https://web3forms.com) access key for `contact@praxel.space` | public (in the page) |
+
+Each piece is optional: without reCAPTCHA keys the captcha step is skipped, without CallMeBot keys WhatsApp is skipped, and with nothing configured the visitor's mail app opens with the message pre-filled. `npm run dev` doesn't run the function; use `vercel dev` to try it locally.
+
+## Security
+
+`vercel.json` sends a strict Content-Security-Policy (scripts only from this site and Google's reCAPTCHA; network calls only to GitHub, the contributions API, Web3Forms and reCAPTCHA; no framing), plus HSTS, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` and `Cross-Origin-Opener-Policy`. If you add a new third-party script, font or API, add its origin to the CSP or the browser will block it.
+
+The Web3Forms key is public by design (it's how Web3Forms works), so someone could post to Web3Forms directly and skip this site's checks; Web3Forms applies its own spam filtering to those. Everything that reaches your WhatsApp has passed the server checks above.
 
 ## GitHub stats
 
