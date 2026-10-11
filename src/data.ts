@@ -7,6 +7,8 @@ export const profile = {
   phoneHref: 'tel:+918105561638',
   linkedin: 'https://www.linkedin.com/in/prajwal-d-l-118198370/',
   resume: '/resume.pdf',
+  github: 'O-FALLEN-ANGEL-O',
+  codingSince: 2022,
 };
 
 export const about =
@@ -84,8 +86,8 @@ export type Project = {
   tag: string;
   text: string;
   stack: string[];
-  url: string;
-  image: string;
+  url?: string;
+  image?: string;
 };
 
 export const projects: Project[] = [
@@ -112,5 +114,69 @@ export const projects: Project[] = [
     stack: ['Next.js', 'React', 'CSS'],
     url: 'https://sparky-lilac.vercel.app/',
     image: '/projects/sparkle.webp',
+  },
+];
+
+/** Shown as a compact index below the featured cards. */
+export const moreProjects: Project[] = [
+  {
+    title: 'TermiAI',
+    tag: 'Frontend complete',
+    text: 'Offline AI terminal assistant that turns natural language into CMD / PowerShell commands and runs them locally.',
+    stack: ['PyQt5', 'FastAPI', 'Ollama', 'LLM'],
+    url: 'https://termi-ai-scribe.vercel.app/',
+    image: '/projects/termiai.webp',
+  },
+  {
+    title: 'Remote PC Control',
+    tag: 'System stats done',
+    text: 'Dashboard to monitor and control a PC remotely — live system stats, file explorer, screenshots and commands.',
+    stack: ['React', 'Tailwind', 'Axios', 'FastAPI'],
+    url: 'https://remote-pc1.onrender.com/',
+    image: '/projects/remote-pc.webp',
+  },
+  {
+    title: 'AI To-Do Hub',
+    tag: 'Web app',
+    text: 'To-do app blending AI with Notion- and Google Keep-style notes.',
+    stack: ['React', 'PHP', 'MySQL', 'Chart.js'],
+    url: 'https://noti-keep-ai-hub.vercel.app/',
+    image: '/projects/ai-todo.webp',
+  },
+  {
+    title: 'Next.js AI Chatbot',
+    tag: 'Web app',
+    text: 'AI-powered chatbot with a modern conversational UI.',
+    stack: ['Next.js', 'TypeScript', 'AI'],
+    url: 'https://ai-chatbot-mu-brown.vercel.app/',
+    image: '/projects/chatbot.webp',
+  },
+  {
+    title: 'Sparkling Gem Bazaar',
+    tag: 'Frontend',
+    text: 'Jewellery storefront with product browsing and a gold exchange programme.',
+    stack: ['Next.js', 'React', 'CSS'],
+    url: 'https://sparkling-gem-bazaar.vercel.app/',
+    image: '/projects/gem-bazaar.webp',
+  },
+  {
+    title: 'Real Estate Website',
+    tag: 'Frontend',
+    text: 'Real estate platform with property listings.',
+    stack: ['React', 'CSS'],
+    url: 'https://real-estate1-virid.vercel.app/',
+    image: '/projects/real-estate.webp',
+  },
+  {
+    title: 'Tech Chat App',
+    tag: 'In progress',
+    text: 'Real-time messaging for tech communities with group chat, file sharing and emoji reactions.',
+    stack: ['React', 'JavaScript', 'API'],
+  },
+  {
+    title: 'Portfolio Dashboard',
+    tag: 'In progress',
+    text: 'Portfolio management with analytics, project tracking and client tools.',
+    stack: ['React', 'PHP', 'MySQL', 'Chart.js'],
   },
 ];

@@ -16,9 +16,10 @@ Personal portfolio of **Prajwal D L**, full stack developer. A monochrome, singl
 | Preloader  | Counter + wipe reveal |
 | Hero       | Per-letter name reveal; blob reacts to the pointer; content drifts away on scroll |
 | About      | Paragraph lights up word by word |
+| Stats      | Career numbers + live GitHub stats count up on scroll |
 | Experience | Section pins and scrolls horizontally; cards swing in from a 3D angle |
 | Skills     | Draggable 3D tag sphere |
-| Projects   | Sticky cards stack and recede into depth; screenshots parallax |
+| Projects   | 3 featured cards stack and recede into depth; the rest sit in a compact index with a cursor-following preview |
 | Contact    | Big type reveal, magnetic buttons, working form |
 
 The blob's position, scale, distortion, spin and accent glow are keyframed per section (`keyframes` in `src/App.tsx`) and scrubbed between sections.
@@ -47,9 +48,13 @@ VITE_WEB3FORMS_KEY=your-access-key
 
 Without a key, submitting the form opens the visitor's email client with the message pre-filled.
 
+## GitHub stats
+
+Public repositories, stars, followers and last-year contributions for `profile.github` (in `src/data.ts`) are fetched in the visitor's browser from the GitHub API and [github-contributions-api](https://github.com/grubersjoe/github-contributions-api), then cached in `localStorage` for 6 hours to stay under GitHub's anonymous rate limit. If the requests fail, the GitHub row is hidden.
+
 ## Editing content
 
-All text — bio, experience, skills, projects — is in `src/data.ts`. Project screenshots are in `public/projects/`, the résumé is `public/resume.pdf`, and the social preview image is `public/og.jpg`.
+All text — bio, experience, skills, projects — is in `src/data.ts`. `projects` are the featured cards; `moreProjects` fill the compact list. Project screenshots are in `public/projects/`, the résumé is `public/resume.pdf`, and the social preview image is `public/og.jpg`.
 
 ## Deploy
 
