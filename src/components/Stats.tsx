@@ -62,10 +62,8 @@ export default function Stats() {
     { label: 'Technologies', value: techCount, suffix: '+' },
   ];
   const github: Tile[] = [
-    { label: 'Public repos', value: gh?.repos ?? null },
+    { label: 'Public repositories', value: gh?.repos ?? null },
     { label: 'Contributions this year', value: gh?.contributions ?? null },
-    { label: 'Stars earned', value: gh?.stars ?? null },
-    { label: 'Followers', value: gh?.followers ?? null },
   ];
 
   return (
@@ -98,10 +96,10 @@ export default function Stats() {
               ))}
             </div>
           </div>
-          <div className="grid flex-[3_1_560px] grid-cols-2 gap-6 sm:grid-cols-4">
+          <div className="grid flex-[2_1_420px] grid-cols-2 gap-6">
             {github.map((t) => (
               <div key={t.label}>
-                <p className="text-4xl font-semibold leading-none tracking-[-0.04em] md:text-[44px]">
+                <p className="text-4xl font-semibold leading-none tracking-[-0.04em] md:text-[56px]">
                   <Counter value={t.value} />
                 </p>
                 <p className="mt-2 text-sm text-muted">{t.label}</p>

@@ -1,7 +1,5 @@
 export type GitHubStats = {
   repos: number;
-  stars: number;
-  followers: number;
   contributions: number;
 };
 
@@ -19,13 +17,12 @@ function readCache(key: string): GitHubStats | null {
 }
 
 async function fetchOne(user: string): Promise<GitHubStats> {
-  const key = `gh-stats:${user}`;
+  const key = `gh-stats-v2:${user}`;
   const cached = readCache(key);
   if (cached) return cached;
 
-  const [profile, repos, contrib] = await Promise.all([
+  const [profile, contrib] = await Promise.all([
     fetch(`https://api.github.com/users/${user}`).then((r) => (r.ok ? r.json() : Promise.reject(r.status))),
-    fetch(`https://api.github.com/users/${user}/repos?per_page=100&type=owner`).then((r) => (r.ok ? r.json() : [])),
     // Public contribution counts scraped from the profile calendar (no token needed).
     fetch(`https://github-contributions-api.jogruber.de/v4/${user}?y=last`)
       .then((r) => (r.ok ? r.json() : null))
@@ -34,8 +31,6 @@ async function fetchOne(user: string): Promise<GitHubStats> {
 
   const data: GitHubStats = {
     repos: profile.public_repos ?? 0,
-    followers: profile.followers ?? 0,
-    stars: Array.isArray(repos) ? repos.reduce((n: number, r: { stargazers_count?: number }) => n + (r.stargazers_count ?? 0), 0) : 0,
     contributions: contrib?.total?.lastYear ?? 0,
   };
   try {
@@ -53,8 +48,6 @@ export async function fetchCombinedStats(users: string[]): Promise<GitHubStats> 
   if (!ok.length) throw new Error('GitHub unavailable');
   return ok.reduce((a, b) => ({
     repos: a.repos + b.repos,
-    stars: a.stars + b.stars,
-    followers: a.followers + b.followers,
     contributions: a.contributions + b.contributions,
   }));
 }

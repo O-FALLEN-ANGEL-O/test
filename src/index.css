@@ -98,19 +98,6 @@ body {
   to { transform: translateX(-50%); }
 }
 
-/* Project rail: drifts left → right on its own, pauses on hover/focus. */
-.rail-track {
-  animation: rail 70s linear infinite;
-}
-.rail:hover .rail-track,
-.rail:focus-within .rail-track {
-  animation-play-state: paused;
-}
-@keyframes rail {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
-}
-
 /* Custom cursor */
 .cursor-dot,
 .cursor-ring {
@@ -166,8 +153,13 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .grain,
-  .marquee-track,
-  .rail-track {
+  .marquee-track {
     animation: none;
   }
+}
+
+/* Project dialog */
+.project-dialog::backdrop {
+  background: rgb(10 10 10 / 0.45);
+  backdrop-filter: blur(6px);
 }

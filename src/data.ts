@@ -25,6 +25,10 @@ export type Job = {
   role: string;
   company: string;
   period: string;
+  /** YYYY-MM; `end` omitted means current. Used for the duration label. */
+  start: string;
+  end?: string;
+  type: string;
   place: string;
   points: string[];
 };
@@ -34,6 +38,8 @@ export const experience: Job[] = [
     role: 'Web Advisor',
     company: 'UnifyCX',
     period: 'Jun 2025 — Present',
+    start: '2025-06',
+    type: 'Full-time',
     place: 'Mangalore, Karnataka',
     points: [
       'Website migrations, SSL installations, email configuration and hosting control panel issues.',
@@ -45,6 +51,9 @@ export const experience: Job[] = [
     role: 'Full Stack Developer',
     company: 'Freelance',
     period: 'Dec 2024 — Jun 2025',
+    start: '2024-12',
+    end: '2025-06',
+    type: 'Freelance',
     place: 'Mangalore',
     points: [
       'Designed and built custom websites and web apps to client requirements.',
@@ -56,6 +65,9 @@ export const experience: Job[] = [
     role: 'Junior Support Engineer',
     company: 'Glowtouch Technologies',
     period: 'Aug 2024 — Dec 2024',
+    start: '2024-08',
+    end: '2024-12',
+    type: 'Full-time',
     place: 'Mangalore',
     points: [
       'Live chat support for hosting, domain and website issues.',
@@ -67,6 +79,9 @@ export const experience: Job[] = [
     role: 'Web Developer Intern',
     company: 'Vitvara Technologies',
     period: 'Jan 2024 — May 2024',
+    start: '2024-01',
+    end: '2024-05',
+    type: 'Internship',
     place: 'Mangalore',
     points: [
       'Built responsive web apps with HTML, CSS, JavaScript and React.js.',
