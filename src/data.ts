@@ -104,6 +104,8 @@ export type Project = {
   stack: string[];
   url?: string;
   image?: string;
+  /** Extra screenshots shown in the project dialog after `image`. */
+  gallery?: string[];
 };
 
 export const projects: Project[] = [
@@ -125,11 +127,12 @@ export const projects: Project[] = [
   },
   {
     title: 'Sparkle',
-    tag: 'Frontend',
-    text: 'Online jewellery storefront with collection browsing and a gold exchange programme — a rebuild of Sparkling Gem Bazaar.',
-    stack: ['Next.js', 'React', 'CSS'],
-    url: 'https://sparky-lilac.vercel.app/',
+    tag: 'Live store',
+    text: 'Fine-jewellery store for a Mangaluru atelier: a scroll-driven 3D ring hero, a shop filterable by metal, stone and price, product pages with a 3D view and certificate details, a cart, customer accounts with order tracking, and staff sign-in.',
+    stack: ['Next.js', 'React Three Fiber', 'Three.js', 'React'],
+    url: 'https://sparkle.praxel.space/',
     image: '/projects/sparkle.webp',
+    gallery: ['/projects/sparkle-shop.webp', '/projects/sparkle-product.webp'],
   },
 ];
 
@@ -170,7 +173,7 @@ export const moreProjects: Project[] = [
   {
     title: 'Sparkling Gem Bazaar',
     tag: 'Frontend',
-    text: 'Jewellery storefront with product browsing and a gold exchange programme.',
+    text: 'The first version of the Sparkle store: product browsing and a gold exchange programme.',
     stack: ['Next.js', 'React', 'CSS'],
     url: 'https://sparkling-gem-bazaar.vercel.app/',
     image: '/projects/gem-bazaar.webp',

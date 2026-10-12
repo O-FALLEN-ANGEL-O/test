@@ -172,6 +172,9 @@ function ProjectDialog({ project, onClose }: { project: Project | null; onClose:
   const last = useRef<Project | null>(null);
   if (project) last.current = project;
   const p = project ?? last.current;
+  const shots = p?.image ? [p.image, ...(p.gallery ?? [])] : [];
+  const [shot, setShot] = useState(0);
+  useEffect(() => setShot(0), [project]);
 
   useEffect(() => {
     const d = ref.current!;
@@ -198,8 +201,32 @@ function ProjectDialog({ project, onClose }: { project: Project | null; onClose:
     >
       {p && (
         <div>
-          {p.image ? (
-            <img src={p.image} alt={`${p.title} screenshot`} width={800} height={500} className="block aspect-[16/9] w-full bg-surface object-cover object-top" />
+          {shots.length ? (
+            <div>
+              <img
+                src={shots[shot] ?? shots[0]}
+                alt={`${p.title} screenshot ${shot + 1} of ${shots.length}`}
+                width={800}
+                height={500}
+                className="block aspect-[16/9] w-full bg-surface object-cover object-top"
+              />
+              {shots.length > 1 && (
+                <div className="flex gap-2 px-6 pt-4 md:px-8">
+                  {shots.map((src, i) => (
+                    <button
+                      key={src}
+                      type="button"
+                      onClick={() => setShot(i)}
+                      aria-label={`Show screenshot ${i + 1}`}
+                      aria-pressed={i === shot}
+                      className={`overflow-hidden rounded-lg border-2 transition-colors ${i === shot ? 'border-ink' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                    >
+                      <img src={src} alt="" width={96} height={60} className="block h-[54px] w-[86px] object-cover object-top" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ) : (
             <div className="flex aspect-[16/7] w-full items-center justify-center bg-surface text-4xl font-semibold tracking-tight text-ink/25">
               {p.title}
