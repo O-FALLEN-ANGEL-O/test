@@ -72,7 +72,7 @@ Public repositories and last-year contributions for every account in `profile.gi
 
 ## Editing content
 
-All text — bio, experience, skills, projects — is in `src/data.ts`. `projects` lead the project strip, followed by `moreProjects`. Project screenshots are in `public/projects/`, the résumé is `public/resume.pdf`, and the social preview image is `public/og.jpg`.
+All text — bio, experience, skills, projects — is in `src/data.ts`. `projects` lead the project strip, followed by `moreProjects`; a project's optional `gallery` adds extra screenshots to its dialog. Project screenshots are in `public/projects/`, the résumé is `public/resume.pdf`, and the social preview image is `public/og.jpg`.
 
 ## Deploy
 
